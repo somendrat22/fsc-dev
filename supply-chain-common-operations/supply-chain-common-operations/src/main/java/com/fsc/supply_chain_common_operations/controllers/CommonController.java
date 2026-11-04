@@ -3,6 +3,7 @@ package com.fsc.supply_chain_common_operations.controllers;
 
 import com.fsc.supply_chain_common_operations.dtos.requests.CreateRoleRequest;
 import com.fsc.supply_chain_common_operations.dtos.requests.EmployeeLoginRequest;
+import com.fsc.supply_chain_common_operations.dtos.requests.InviteEmployeeRequest;
 import com.fsc.supply_chain_common_operations.dtos.responses.EmployeeLoginResponse;
 import com.fsc.supply_chain_common_operations.dtos.responses.ErrorResponse;
 import com.fsc.supply_chain_common_operations.exceptions.InvalidCredentialsException;
@@ -70,8 +71,27 @@ public class CommonController {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             return new ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
+    /**
+     * Usecase: I am a manager and I want to invite my employee to use this platform at that time this feature comes into the picture
+     * Why we are keeping this in common ?
+     * As this feature is common to all our product suite that's why we are keeping this in common.
+     * How this feature will get implemented ?
+     * 1. When this endpoint will get triggered at that moment my client/ui/frontend will pass 2 things
+     * Invitor JWT token & Invitee Employee Details
+     * 2. First step is to verify that invitor employee is having those roles which contains INVITE_EMPLOYEE operation or permission.
+     * if not we will reject the request with 401 unAuthorized else we will pass the request to the service.,
+     * 3. If we are at the service we will convert request into the employee object and after converting we will have some validation checks and after that validations we will save employee record in DB.
+     * 4. After saving employeeRecord we will call notificationService that you are invited to the platform and here is your temp credentials.
+     * @param inviteEmployeeRequest
+     * @return
+     */
+    @PostMapping("/emp/invite-employee")
+    public ResponseEntity inviteEmployee(
+            @RequestBody InviteEmployeeRequest inviteEmployeeRequest,
 
+            ){
 
     }
 }
