@@ -7,12 +7,18 @@ import com.fsc.supply_chain_common_operations.models.Company;
 import com.fsc.supply_chain_common_operations.models.Employee;
 import com.fsc.supply_chain_common_operations.models.Role;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class InviteEmployeeRequest {
     private UUID companySysId;
 

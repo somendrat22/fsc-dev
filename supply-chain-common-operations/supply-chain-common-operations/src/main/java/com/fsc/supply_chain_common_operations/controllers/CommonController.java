@@ -82,7 +82,7 @@ public class CommonController {
      * Invitor JWT token & Invitee Employee Details
      * 2. First step is to verify that invitor employee is having those roles which contains INVITE_EMPLOYEE operation or permission.
      * if not we will reject the request with 401 unAuthorized else we will pass the request to the service.,
-     * 3. If we are at the service we will convert request into the employee object and after converting we will have some validation checks and after that validations we will save employee record in DB.
+     * 3. If we are at the service layer we will convert request into the employee object and after converting we will have some validation checks and after that validations we will save employee record in DB.
      * 4. After saving employeeRecord we will call notificationService that you are invited to the platform and here is your temp credentials.
      * @param inviteEmployeeRequest
      * @return
@@ -90,8 +90,20 @@ public class CommonController {
     @PostMapping("/emp/invite-employee")
     public ResponseEntity inviteEmployee(
             @RequestBody InviteEmployeeRequest inviteEmployeeRequest,
-
+            @RequestHeader String token
             ){
+        try{
+            Employee invitorEmp = authService.isUserHavingAccess(token, "INVITE_EMPLOYEE");
+            // We need to call employeeService
+        }catch (UnAuthorizedException e){
+            // 401
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
+            return new ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED);
+        }catch (Exception e){
+            // 5XX
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            return new ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
     }
 }

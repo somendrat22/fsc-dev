@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -46,6 +48,19 @@ public class RoleService implements EntityService<Role> {
                 .operations(operations)
                 .build();
         return this.saveOrUpdate(role);
+    }
+
+    public List<Role> fetchRolesBySysId(List<UUID> roleSysIds){
+        List<Role> roles = new ArrayList<>();
+        for(UUID roleSysId : roleSysIds){
+            Role role = roleRepo.findById(roleSysId).orElse(null);
+            if(role == null){
+                log.warn("Role with sysId={} does not exist", roleSysId.toString());
+                continue;
+            }
+            roles.add(role);
+        }
+        return roles;
     }
 
     public Role saveOrUpdate(Role role){

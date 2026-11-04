@@ -1,17 +1,22 @@
 package com.fsc.supply_chain_common_operations.services;
 
+import com.fsc.supply_chain_common_operations.dtos.requests.CommonValidationDto;
+import com.fsc.supply_chain_common_operations.dtos.requests.InviteEmployeeRequest;
 import com.fsc.supply_chain_common_operations.enums.CompanyType;
 import com.fsc.supply_chain_common_operations.models.Company;
 import com.fsc.supply_chain_common_operations.models.Employee;
 import com.fsc.supply_chain_common_operations.models.Role;
 import com.fsc.supply_chain_common_operations.repositories.EmployeeRepo;
 import com.fsc.supply_chain_common_operations.transformers.EntityTransformer;
+import com.fsc.supply_chain_common_operations.utilities.CommonUtility;
 import com.fsc.supply_chain_common_operations.utilities.SystemUtility;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
+
 
 @Slf4j
 @Service
@@ -19,12 +24,15 @@ public class EmployeeService implements EntityService<Employee> {
 
     private RoleService roleService;
     private EmployeeRepo employeeRepo;
+    private CommonUtility commonUtility;
 
     @Autowired
     public EmployeeService(RoleService roleService,
-                           EmployeeRepo employeeRepo){
+                           EmployeeRepo employeeRepo,
+                           CommonUtility commonUtility){
         this.roleService = roleService;
         this.employeeRepo = employeeRepo;
+        this.commonUtility = commonUtility;
     }
 
     public Employee getEmployeeByEmail(String email){
@@ -75,6 +83,26 @@ public class EmployeeService implements EntityService<Employee> {
                 company.getSysId(), maintEmployee.getSysId());
 
         return maintEmployee;
+    }
+
+    public Employee getEmployeeBySysId(UUID sysId){
+        return employeeRepo.findById(sysId).orElse(null);
+    }
+
+    public Employee inviteEmployee(
+            InviteEmployeeRequest inviteEmployeeRequest,
+            Employee invitorEmp
+    ){
+      commonUtility.validateBasicChecks(new CommonValidationDto(inviteEmployeeRequest.getRoleSysIds(), invitorEmp.getSysId(),inviteEmployeeRequest.getCompanySysId()));
+      // Map the request to the model.
+      Employee manager =  this.getEmployeeBySysId(inviteEmployeeRequest.getManagerSysId());
+      if(manager == null){
+          log.warn("Manager details not passed");
+      }
+      List<Role> roles = roleService.fetchRolesBySysId(inviteEmployeeRequest.getRoleSysIds());
+      Employee employee = EntityTransformer.mapEmpRequestToEmpModel(inviteEmployeeRequest, invitorEmp.getCompany(), invitorEmp, manager,roles);
+      employee = this.saveOrUpdate(employee);
+      return employee;
     }
 
 }

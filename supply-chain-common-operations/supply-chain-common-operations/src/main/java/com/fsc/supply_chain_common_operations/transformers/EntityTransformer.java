@@ -1,13 +1,16 @@
 package com.fsc.supply_chain_common_operations.transformers;
 
+import com.fsc.supply_chain_common_operations.dtos.requests.InviteEmployeeRequest;
 import com.fsc.supply_chain_common_operations.enums.EmploymentStatus;
 import com.fsc.supply_chain_common_operations.enums.UserStatus;
 import com.fsc.supply_chain_common_operations.models.Company;
 import com.fsc.supply_chain_common_operations.models.Employee;
+import com.fsc.supply_chain_common_operations.models.Role;
 import com.fsc.supply_chain_common_operations.utilities.SystemUtility;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class EntityTransformer {
     public static Employee mapCompanyToEmployee(Company company, String passwordHash) {
@@ -42,6 +45,38 @@ public class EntityTransformer {
                 .createdBy("system")
                 .updatedBy("system")
 
+                .build();
+    }
+
+
+    public static Employee mapEmpRequestToEmpModel(
+            InviteEmployeeRequest inviteEmployeeRequest,
+            Company company,
+            Employee creator,
+            Employee manager,
+            List<Role> roles
+    ){
+        return Employee.builder()
+                .employeeCode(SystemUtility.generateId("EMPLOYEE"))
+                .emailAddress(inviteEmployeeRequest.getEmailAddress())
+                .company(company)
+                .department(inviteEmployeeRequest.getDepartment())
+                .designation(inviteEmployeeRequest.getDesignation())
+                .joiningDate(inviteEmployeeRequest.getJoiningDate())
+                .probationEndDate(inviteEmployeeRequest.getProbationEndDate())
+                .employmentType(inviteEmployeeRequest.getEmploymentType())
+                .workEmail(inviteEmployeeRequest.getWorkEmail())
+                .workPhone(inviteEmployeeRequest.getWorkPhone())
+                .firstName(inviteEmployeeRequest.getFirstName())
+                .lastName(inviteEmployeeRequest.getLastName())
+                .emailAddress(inviteEmployeeRequest.getEmailAddress())
+                .phoneNumber(inviteEmployeeRequest.getPhoneNumber())
+                .roles(roles)
+                .passwordHash(SystemUtility.generatePassword(10))
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .createdBy(creator.getEmailAddress())
+                .updatedBy(creator.getEmailAddress())
                 .build();
     }
 }
