@@ -1,6 +1,11 @@
 package com.slo.supplier_lifecycle_operations.services;
 
+import com.fsc.supply_chain_common_operations.clients.MetaClient;
 import com.fsc.supply_chain_common_operations.constants.NotificationTemplateConstant;
+import com.fsc.supply_chain_common_operations.dtos.requests.meta.MetaInputContentRequest;
+import com.fsc.supply_chain_common_operations.dtos.requests.meta.MetaInputMessageRequest;
+import com.fsc.supply_chain_common_operations.dtos.requests.meta.MetaModelRequest;
+import com.fsc.supply_chain_common_operations.dtos.responses.meta.MetaAIResponse;
 import com.fsc.supply_chain_common_operations.enums.CompanyType;
 import com.fsc.supply_chain_common_operations.enums.NotificationPriority;
 import com.fsc.supply_chain_common_operations.enums.NotificationStatus;
@@ -22,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -36,19 +40,22 @@ public class SupplierCompanyService {
     private ExecutorService executorService;
     private NotificationService notificationService;
 
+
     @Autowired
     public SupplierCompanyService(SupplierCompanyRepo supplierCompanyRepo,
                                   EmployeeService employeeService,
                                   NotificationTemplateRepo notificationTemplateRepo,
                                   NotificationService notificationService,
                                   NotificationContextRepo notificationContextRepo,
-                                  ExecutorService executorService){
+                                  ExecutorService executorService
+                                  ){
         this.supplierCompanyRepo = supplierCompanyRepo;
         this.employeeService = employeeService;
         this.notificationTemplateRepo = notificationTemplateRepo;
         this.notificationService = notificationService;
         this.executorService = executorService;
         this.notificationContextRepo = notificationContextRepo;
+
     }
 
     public SupplierCompany registerSupplierCompany(
@@ -62,11 +69,15 @@ public class SupplierCompanyService {
                 RequestTransformer.mapRegistrationRequestToSupplierCompany(
                         supplierCompanyRegistrationRequest);
 
+        String feedback = getSupplierCompanyFeedback(supplierCompany);
+
         log.debug("Successfully mapped registration request to SupplierCompany. companyName={}",
                 supplierCompany.getCompanyName());
 
         // Save supplier company
         supplierCompany = this.saveOrUpdate(supplierCompany);
+        supplierCompany.setAiFeedback(feedback);
+
 
         log.info("Supplier company saved successfully. companyName={}, companyId={}",
                 supplierCompany.getCompanyName(),
@@ -157,6 +168,43 @@ public class SupplierCompanyService {
 
     public SupplierCompany saveOrUpdate(SupplierCompany supplierCompany){
         return this.supplierCompanyRepo.save(supplierCompany);
+    }
+
+
+    public String getSupplierCompanyFeedback(SupplierCompany supplierCompany) {
+
+        MetaModelRequest metaModelRequest = new MetaModelRequest();
+        metaModelRequest.setModel("muse-wonder-1.0");
+        metaModelRequest.setStream(false);
+
+        MetaInputMessageRequest message = new MetaInputMessageRequest();
+        message.setRole("user");
+
+        MetaInputContentRequest metaInputContentRequest = new MetaInputContentRequest();
+        metaInputContentRequest.setType("input_text");
+        metaInputContentRequest.setText(
+                "Analyze the following supplier company details and provide comprehensive, " +
+                        "constructive feedback about the supplier's overall performance, strengths, " +
+                        "weaknesses, risks, and areas for improvement.\n\n" +
+                        "Supplier Company Payload:\n" +
+                        supplierCompany.toString()
+        );
+
+        message.setContent(List.of(metaInputContentRequest));
+        metaModelRequest.setInput(List.of(message));
+
+        // Return request for now
+        MetaClient metaClient = new MetaClient();
+        MetaAIResponse metaAIResponse = metaClient.getAIResponse(metaModelRequest);
+
+        return metaAIResponse.getOutput()
+                .stream()
+                .filter(output -> "message".equals(output.getType()))
+                .flatMap(output -> output.getContent().stream())
+                .filter(content -> "output_text".equals(content.getType()))
+                .map(MetaAIResponse.Content::getText)
+                .findFirst()
+                .orElse(null);
     }
 
 }

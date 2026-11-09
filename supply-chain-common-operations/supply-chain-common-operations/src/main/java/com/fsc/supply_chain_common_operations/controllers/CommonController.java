@@ -11,6 +11,7 @@ import com.fsc.supply_chain_common_operations.exceptions.UnAuthorizedException;
 import com.fsc.supply_chain_common_operations.models.Employee;
 import com.fsc.supply_chain_common_operations.models.Role;
 import com.fsc.supply_chain_common_operations.services.AuthService;
+import com.fsc.supply_chain_common_operations.services.EmployeeService;
 import com.fsc.supply_chain_common_operations.services.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,12 +24,15 @@ public class CommonController {
 
     private AuthService authService;
     private RoleService roleService;
+    private EmployeeService employeeService;
 
     @Autowired
     public CommonController(AuthService authService,
-                            RoleService roleService){
+                            RoleService roleService,
+                            EmployeeService employeeService){
         this.authService = authService;
         this.roleService = roleService;
+        this.employeeService = employeeService;
     }
 
     @PostMapping("/emp/login")
@@ -94,6 +98,8 @@ public class CommonController {
             ){
         try{
             Employee invitorEmp = authService.isUserHavingAccess(token, "INVITE_EMPLOYEE");
+            employeeService.inviteEmployee(inviteEmployeeRequest, invitorEmp);
+            return new ResponseEntity(HttpStatus.CREATED);
             // We need to call employeeService
         }catch (UnAuthorizedException e){
             // 401

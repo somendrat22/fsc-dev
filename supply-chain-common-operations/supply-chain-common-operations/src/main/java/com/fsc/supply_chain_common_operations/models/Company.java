@@ -23,6 +23,8 @@ public class Company extends GlobalRecord{
     private String emailAddress;
     private String website;
     private String contactNumber;
+    @Column(columnDefinition = "TEXT")
+    private String aiFeedback;
 
     @Enumerated(EnumType.STRING)
     private CompanyStatus status; // PENDING, REJECTED, INACTIVE, ACTIVE

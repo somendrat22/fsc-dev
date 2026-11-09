@@ -42,7 +42,7 @@ public class CommonUtility {
             CommonValidationDto commonValidationDto
     ){
        // First Validation was to check that company exist or not.
-        if(commonValidationDto.getCompanySysId() == null || commonValidationDto.getCompanySysId().isEmpty()){
+        if(commonValidationDto.getCompanySysId() == null){
             throw new IllegalArgumentException("Company sysId not passed");
         }
         Company company = companyRepo.findById(commonValidationDto.getCompanySysId()).orElse(null);
@@ -50,7 +50,7 @@ public class CommonUtility {
             throw new RecordDoesNotExistException("Company sysId does not exist");
         }
         // Check employee exist or not. This is the employee who is performing task
-        if(commonValidationDto.getEmpSysId() == null || commonValidationDto.getEmpSysId().isEmpty()){
+        if(commonValidationDto.getEmpSysId() == null){
             throw new IllegalArgumentException("Employee sysId not passed");
         }
 
@@ -63,7 +63,7 @@ public class CommonUtility {
         if(commonValidationDto.getRoleSysIds() != null){
             // We will validate roles belongs to this company or not.
             for(UUID roleSysId : commonValidationDto.getRoleSysIds()){
-                Role role = this.roleRepo.findById(UUID.fromString(roleSysId)).orElse(null);
+                Role role = this.roleRepo.findById(roleSysId).orElse(null);
                 if(role == null ){
                     throw new RecordDoesNotExistException("Role sysId does not exist");
                 }

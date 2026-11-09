@@ -144,7 +144,9 @@ public class OperationService {
 
                 new OperationSeed("OPR-045", "VIEW_PROCUREMENT_REPORT", "REPORTING"),
                 new OperationSeed("OPR-046", "EXPORT_PROCUREMENT_REPORT", "REPORTING"),
-                new OperationSeed("OPR-047", "VIEW_AUDIT_LOG", "AUDIT")
+                new OperationSeed("OPR-047", "VIEW_AUDIT_LOG", "AUDIT"),
+                new OperationSeed("OPR-048", "CREATE_ROLE", "COMPANY"),
+                new OperationSeed("OPR-049", "INVITE_EMPLOYEE", "COMPANY")
         );
 
         // Existing operations that are already present in the table
